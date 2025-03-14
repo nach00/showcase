@@ -101,8 +101,11 @@ export default function Home() {
 					<div className="flex gap-3 items-center">
 						{/* <div className="w-4 h-4 bg-black"></div> */}
 
-						<i id="whirlybat" className="wb-icon mr-3 text-3xl text-blue-700">
-							¤
+						<i
+							id="whirlybat"
+							className="wb-icon mr-3 text-3xl text-blue-700 normal-case"
+						>
+							·
 						</i>
 						<span className="uppercase text-blue-900">PORTFOLIO</span>
 					</div>

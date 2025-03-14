@@ -70,11 +70,11 @@ export const projects: ProjectProps[] = [
 		demo: "/movie-finder",
 		icon: "σ",
 	},
-	// {
-	// 	title: "ToDo List",
-	// 	description: "ToDo list with add, remove, and complete buttons",
-	// 	github: "https://www.github.com/nach00/showcase/todo-list",
-	// 	demo: "/todo-list",
-	// 	icon: "list",
-	// },
+	{
+		title: "ToDo List",
+		description: "ToDo list with add, remove, and complete buttons",
+		github: "https://www.github.com/nach00/showcase/todo-list",
+		demo: "/todo-list",
+		icon: "¤",
+	},
 ];
