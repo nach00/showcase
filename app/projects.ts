@@ -64,11 +64,25 @@ export const projects: ProjectProps[] = [
 		icon: "w",
 	},
 	{
+		title: "Currency Converter V2",
+		description: "Revised",
+		github: "https://www.github.com/nach00/showcase/currency-converter-v2",
+		demo: "/currency-v2/",
+		icon: "w",
+	},
+	{
 		title: "Movie Finder",
 		description: "Movie finder with search bar and movie cards",
 		github: "https://www.github.com/nach00/showcase/movie-finder",
 		demo: "/movie-finder",
 		icon: "σ",
+	},
+	{
+		title: "Movie Finder V2",
+		description: "Revised edition.",
+		github: "https://www.github.com/nach00/showcase/movie-finder-v2",
+		demo: "/movie-finder-v2",
+		icon: "Q",
 	},
 	{
 		title: "ToDo List",
