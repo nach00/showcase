@@ -11,6 +11,6 @@ export default [
 	route("currency-converter", "./routes/currency-converter.tsx"),
 	route("currency-v2", "./currency-v2/CurrencyExchange.tsx"),
 	route("movie-finder", "./routes/movie-finder.tsx"),
-	route("movie-finder-v2", "./routes/movie-finder-v2.tsx"),
+	route("movie-finder-v2/*", "./movie-finder-v2/movie-finder-v2.tsx"),
 	route("todo-list", "./routes/todo-list.tsx"),
 ] satisfies RouteConfig;

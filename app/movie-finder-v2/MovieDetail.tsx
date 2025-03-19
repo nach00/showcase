@@ -3,12 +3,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-// import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import NavBar from "~/components/NavBar";
 import { Button } from "@/components/ui/button";
-
-import { Link, useParams } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface MovieDetail {
 	Title: string;
@@ -68,10 +66,15 @@ const MovieService = {
 
 export default function MovieDetail() {
 	const params = useParams();
+	const navigate = useNavigate();
 	const id = params.id as string;
 	const [movie, setMovie] = useState<MovieDetail | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
+
+	const handleGoBack = () => {
+		navigate("..");
+	};
 
 	useEffect(() => {
 		const fetchMovie = async () => {
@@ -97,10 +100,10 @@ export default function MovieDetail() {
 			<div className="max-w-5xl mx-auto px-6 py-12 relative bg-white border-x-2 border-black min-h-screen before:content-['DETAIL'] before:absolute before:top-4 before:right-6 before:text-xs before:tracking-widest before:font-mono">
 				<div className="mb-6">
 					<Button
-						asChild
+						onClick={handleGoBack}
 						className="font-mono tracking-widest text-xs uppercase"
 					>
-						<Link href="/">← "Back to search"</Link>
+						← "Back to search"
 					</Button>
 				</div>
 
