@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import CurrencyChart from "./CurrencyChart"; // Import the new chart component
 
 interface Rate {
 	[key: string]: number;
@@ -14,6 +15,7 @@ export default function CurrencyConverter({ rates }: CurrencyConverterProps) {
 	const [amount, setAmount] = useState<number | string>(100);
 	const [convertedAmount, setConvertedAmount] = useState<number | string>(0);
 	const [availableCurrencies, setAvailableCurrencies] = useState<string[]>([]);
+	const [showChart, setShowChart] = useState<boolean>(true); // New state to toggle chart visibility
 
 	useEffect(() => {
 		if (rates) {
@@ -92,6 +94,11 @@ export default function CurrencyConverter({ rates }: CurrencyConverterProps) {
 				"—"
 			);
 		}
+	};
+
+	// Toggle chart visibility
+	const toggleChart = () => {
+		setShowChart(!showChart);
 	};
 
 	return (
@@ -211,10 +218,17 @@ export default function CurrencyConverter({ rates }: CurrencyConverterProps) {
 					{`1 ${fromCurrency} = ${getRateDisplay()} ${toCurrency}`}
 				</div>
 			</div>
-
-			{/* <Button className="bg-black text-white border-[3px] border-[#00CC00] py-6 text-3xl font-black tracking-tighter cursor-pointer mt-10 transition-all hover:bg-[#00CC00] hover:text-black hover:scale-[1.02] uppercase transform -rotate-1 rounded-none"> */}
-			{/* 	COMPLETE TRANSACTION */}
-			{/* </Button> */}
+			{/* Chart toggle button */}
+			<button
+				onClick={toggleChart}
+				className="self-end transform rotate-2 bg-black text-white border-[3px] border-[#00CC00] py-2 px-4 uppercase tracking-widest font-black text-sm hover:bg-[#00CC00] hover:text-black transition-colors cursor-pointer"
+			>
+				{showChart ? "HIDE CHART" : "SHOW CHART"}
+			</button>
+			{/* Conditional rendering of the chart */}
+			{showChart && (
+				<CurrencyChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
+			)}
 		</div>
 	);
 }
