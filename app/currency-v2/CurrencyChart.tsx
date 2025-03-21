@@ -14,6 +14,29 @@ const CurrencyChart: React.FC<CurrencyChartProps> = ({
 	fromCurrency,
 	toCurrency,
 }) => {
+	// Helper function to determine currency pair volatility
+	const getVolatility = (from: string, to: string): number => {
+		// Major currency pairs have lower volatility
+		const majorPairs = [
+			"EURUSD",
+			"USDJPY",
+			"GBPUSD",
+			"USDCHF",
+			"AUDUSD",
+			"USDCAD",
+			"NZDUSD",
+		];
+
+		const pair = `${from}${to}`;
+		const inversePair = `${to}${from}`;
+
+		if (from === to) return 0.001; // Same currency - minimal volatility
+		if (majorPairs.includes(pair) || majorPairs.includes(inversePair))
+			return 0.02; // Major pairs - low volatility
+		if (from === "USD" || to === "USD" || from === "EUR" || to === "EUR")
+			return 0.03; // USD or EUR pairs - medium volatility
+		return 0.05; // Cross currency or exotic pairs - higher volatility
+	};
 	const chartRef = useRef<HTMLCanvasElement>(null);
 	const chartInstance = useRef<Chart | null>(null);
 
@@ -29,15 +52,61 @@ const CurrencyChart: React.FC<CurrencyChartProps> = ({
 				const labels: string[] = [];
 				const data: number[] = [];
 
-				// Create a base rate and add some variability
-				let baseRate =
-					fromCurrency === "USD" && toCurrency === "EUR"
-						? 0.85
-						: fromCurrency === "USD" && toCurrency === "GBP"
-							? 0.75
-							: fromCurrency === "USD" && toCurrency === "JPY"
-								? 108.5
-								: 1.25;
+				// Get realistic exchange rate based on the currency pair
+				let baseRate;
+
+				// Define common currency pair rates (more comprehensive than before)
+				const baseRates: Record<string, Record<string, number>> = {
+					USD: {
+						EUR: 0.92,
+						GBP: 0.78,
+						JPY: 148.5,
+						CAD: 1.35,
+						AUD: 1.52,
+						CHF: 0.89,
+						CNY: 7.23,
+						HKD: 7.82,
+						NZD: 1.65,
+					},
+					EUR: {
+						USD: 1.09,
+						GBP: 0.85,
+						JPY: 161.5,
+						CAD: 1.47,
+						AUD: 1.65,
+						CHF: 0.97,
+						CNY: 7.87,
+						HKD: 8.51,
+						NZD: 1.79,
+					},
+					GBP: {
+						USD: 1.28,
+						EUR: 1.18,
+						JPY: 190.5,
+						CAD: 1.73,
+						AUD: 1.94,
+						CHF: 1.14,
+						CNY: 9.27,
+						HKD: 10.01,
+						NZD: 2.11,
+					},
+				};
+
+				// Try to get the rate from our predefined rates
+				if (baseRates[fromCurrency] && baseRates[fromCurrency][toCurrency]) {
+					baseRate = baseRates[fromCurrency][toCurrency];
+				}
+				// Otherwise calculate it if we have the inverse
+				else if (baseRates[toCurrency] && baseRates[toCurrency][fromCurrency]) {
+					baseRate = 1 / baseRates[toCurrency][fromCurrency];
+				}
+				// Default fallback with warning
+				else {
+					console.warn(
+						`No predefined rate for ${fromCurrency}/${toCurrency}, using default approximation`,
+					);
+					baseRate = fromCurrency === toCurrency ? 1 : 1.25;
+				}
 
 				// Generate dates and rates for the last 30 days
 				for (let i = 30; i >= 0; i--) {
@@ -48,13 +117,18 @@ const CurrencyChart: React.FC<CurrencyChartProps> = ({
 					const formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
 					labels.push(formattedDate);
 
-					// Create some random variations for mock data
-					const randomVariation = (Math.random() - 0.5) * 0.05; // +/- 2.5%
+					// Create realistic variations based on currency volatility
+					// Major pairs like EUR/USD have lower volatility than exotic pairs
+					const volatility = getVolatility(fromCurrency, toCurrency);
+					const randomVariation = (Math.random() - 0.5) * volatility;
 					const rate = baseRate * (1 + randomVariation);
-					data.push(parseFloat(rate.toFixed(4)));
 
-					// Adjust base rate slightly for next day (trending)
-					baseRate += (Math.random() - 0.49) * 0.01 * baseRate;
+					// Ensure proper decimal precision based on currency
+					const precision = toCurrency === "JPY" ? 2 : 4;
+					data.push(parseFloat(rate.toFixed(precision)));
+
+					// Adjust base rate with less bias (centered random walk)
+					baseRate += (Math.random() - 0.5) * 0.005 * baseRate;
 				}
 
 				renderChart(labels, data);
@@ -131,13 +205,21 @@ const CurrencyChart: React.FC<CurrencyChartProps> = ({
 						borderColor: "#00CC00",
 						borderWidth: 1,
 						displayColors: false,
+						callbacks: {
+							label: function (context) {
+								const value = context.parsed.y;
+								const precision = toCurrency === "JPY" ? 2 : 4;
+								return `1 ${fromCurrency} = ${value.toFixed(
+									precision,
+								)} ${toCurrency}`;
+							},
+						},
 					},
 				},
 				scales: {
 					x: {
 						grid: {
 							display: false,
-							drawBorder: false,
 						},
 						ticks: {
 							font: {
@@ -149,7 +231,6 @@ const CurrencyChart: React.FC<CurrencyChartProps> = ({
 					y: {
 						grid: {
 							color: "#E0E0E0",
-							drawBorder: false,
 						},
 						ticks: {
 							font: {
@@ -157,9 +238,18 @@ const CurrencyChart: React.FC<CurrencyChartProps> = ({
 								weight: "bold",
 							},
 							callback: function (value) {
-								return value.toFixed(4);
+								// Use appropriate decimal places based on currency
+								return toCurrency === "JPY"
+									? value.toFixed(2)
+									: value.toFixed(4);
 							},
 						},
+						// Ensure y-axis doesn't start from zero to better show rate changes
+						beginAtZero: false,
+						// Use suggestedMin and suggestedMax to control the visible range
+						// This creates a better visualization of the fluctuations
+						suggestedMin: Math.min(...data) * 0.995,
+						suggestedMax: Math.max(...data) * 1.005,
 					},
 				},
 				interaction: {
